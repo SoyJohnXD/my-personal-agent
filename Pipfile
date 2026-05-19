@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pydantic-ai = "*"
+pydantic = "*"
+python-dotenv = "*"
+httpx = "*"
+beautifulsoup4 = "*"
+requests = "*"
+python-telegram-bot = "*"
+ddgs = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
+
+[scripts]
+start-cli = "python -m src.gateways.cli.start"
+start-telegram = "python -m src.gateways.telegram.start"
