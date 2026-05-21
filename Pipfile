@@ -12,6 +12,7 @@ beautifulsoup4 = "*"
 requests = "*"
 python-telegram-bot = "*"
 ddgs = "*"
+sqlmodel = "*"
 
 [dev-packages]
 

@@ -11,7 +11,8 @@ def get_env_variable(key: str) -> str:
     return value
 
 
-AGENT_NAME: str = "Hermenecio"
+AGENT_NAME: str = get_env_variable("AGENT_NAME")
+USER_NAME: str = get_env_variable("USER_NAME")
 
 API_KEY: str = get_env_variable("API_KEY")
 API_BASE_URL: str = get_env_variable("API_BASE_URL")

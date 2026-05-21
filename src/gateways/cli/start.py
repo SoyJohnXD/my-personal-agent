@@ -54,7 +54,10 @@ def chat_cli():
             with consoleInstance.status(
                 "[bold magenta]⏳ Echando cabeza...[/bold magenta]", spinner="dots"
             ):
-                response = assistant.run_sync(user_input, message_history=history)
+                response = assistant.run_sync(
+                    user_input,
+                    message_history=history,
+                )
 
             if response:
                 history = response.all_messages()
