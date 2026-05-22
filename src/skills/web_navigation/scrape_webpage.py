@@ -5,33 +5,35 @@ from src.utils.logger import get_logger
 
 logger = get_logger("skill:web_navigation:scrape_webpage")
 
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+}
+NOISE_TAGS = [
+    "script",
+    "style",
+    "noscript",
+    "iframe",
+    "nav",
+    "header",
+    "footer",
+    "aside",
+    "menu",
+    "ins",
+    "dialog",
+    "svg",
+    "canvas",
+    "form",
+]
+MAX_CHARS = 4000
+
 
 def fetch_html(url: str) -> str:
-    BROWSER_HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
     response = requests.get(url, headers=BROWSER_HEADERS, timeout=10)
     response.raise_for_status()
     return response.content
 
 
 def extract_readable_text(html: bytes) -> str:
-    NOISE_TAGS = [
-        "script",
-        "style",
-        "noscript",
-        "iframe",
-        "nav",
-        "header",
-        "footer",
-        "aside",
-        "menu",
-        "ins",
-        "dialog",
-        "svg",
-        "canvas",
-        "form",
-    ]
     soup = BeautifulSoup(html, "html.parser")
     for noise in soup(NOISE_TAGS):
         noise.decompose()
@@ -39,7 +41,6 @@ def extract_readable_text(html: bytes) -> str:
 
 
 def truncate_result(text: str) -> str:
-    MAX_CHARS = 4000
     if len(text) <= MAX_CHARS:
         return text
     return text[:MAX_CHARS] + "\n\n... [CONTENIDO TRUNCADO POR LONGITUD]"

@@ -34,6 +34,4 @@ STRICT_BOUNDARIES = (
     "4. Cero Promesas vacías: no ofrezcas skills, habilidades o capacidades que no tienes en este momento."
 )
 
-WHO_YOU_ARE = (
-    IDENTITY + INTERACTION_USER_AGENT + OPERATIONAL_GUIDELINES + STRICT_BOUNDARIES
-)
+WHO_YOU_ARE = IDENTITY + INTERACTION_USER_AGENT + OPERATIONAL_GUIDELINES + STRICT_BOUNDARIES

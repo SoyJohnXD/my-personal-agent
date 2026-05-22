@@ -21,10 +21,7 @@ def search_memories(text: str) -> str:
         memories = repo.search(text=text)
         if not memories:
             return "No encontré memorias relacionadas."
-        return "\n\n".join(
-            f"ID: {m.id}\nTítulo: {m.title}\nTags: {m.tags}\nContenido: {m.content}"
-            for m in memories
-        )
+        return "\n\n".join(f"ID: {m.id}\nTítulo: {m.title}\nTags: {m.tags}\nContenido: {m.content}" for m in memories)
     except Exception as error:
         logger.error(f"Error en search_memories: {error}")
         return f"Error al buscar memorias: {error}"

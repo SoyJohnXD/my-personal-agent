@@ -17,11 +17,7 @@ logger = get_logger("telegram_gateway")
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (
-        update.message is None
-        or update.message.text is None
-        or context.user_data is None
-    ):
+    if update.message is None or update.message.text is None or context.user_data is None:
         return
 
     user_text: str = update.message.text
@@ -31,9 +27,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         context.user_data[HISTORY_IDENTIFIER] = []
 
     try:
-        response = await assistant.run(
-            user_text, message_history=context.user_data[HISTORY_IDENTIFIER]
-        )
+        response = await assistant.run(user_text, message_history=context.user_data[HISTORY_IDENTIFIER])
 
         context.user_data[HISTORY_IDENTIFIER] = response.all_messages()
 
@@ -61,9 +55,7 @@ def main() -> None:
 
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
-    logger.info(
-        "Bot de Telegram en línea. Listo para recibir mensajes. Presiona Ctrl+C para detener."
-    )
+    logger.info("Bot de Telegram en línea. Listo para recibir mensajes. Presiona Ctrl+C para detener.")
     app.run_polling()
 
 

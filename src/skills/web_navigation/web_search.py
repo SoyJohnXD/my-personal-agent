@@ -4,14 +4,15 @@ from src.utils.logger import get_logger
 
 logger = get_logger("skill:web_navigation:web_search")
 
+MAX_RESULTS = 2
+MAX_BODY_CHARS = 300
+
 
 def execute_web_search(query: str) -> list[dict]:
-    MAX_RESULTS = 2
     return DDGS().text(query, max_results=MAX_RESULTS)
 
 
 def format_search_result(search_result: dict) -> str:
-    MAX_BODY_CHARS = 300
     title = search_result.get("title", "Sin título")
     url = search_result.get("href", "Sin URL")
     body = (search_result.get("body") or "")[:MAX_BODY_CHARS]

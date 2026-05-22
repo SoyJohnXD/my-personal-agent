@@ -9,12 +9,12 @@ from src.agent.assistant import assistant
 from src.config.settings import AGENT_NAME
 from src.utils.report import save_execution_report
 
-consoleInstance = Console()
+cli_console = Console()
 
 
 def chat_cli() -> None:
-    consoleInstance.clear()
-    consoleInstance.print(
+    cli_console.clear()
+    cli_console.print(
         Panel.fit(
             f"🤖 [bold cyan]{AGENT_NAME} CLI[/bold cyan]\n"
             "Escribe [bold red]'salir'[/bold red] para terminar.\n"
@@ -28,10 +28,8 @@ def chat_cli() -> None:
 
     while True:
         try:
-            consoleInstance.print(Rule(style="dim"))
-            user_input = consoleInstance.input(
-                "\n[bold green]👤 Tú:[/bold green] "
-            ).strip()
+            cli_console.print(Rule(style="dim"))
+            user_input = cli_console.input("\n[bold green]👤 Tú:[/bold green] ").strip()
         except (KeyboardInterrupt, EOFError):
             break
 
@@ -39,20 +37,18 @@ def chat_cli() -> None:
             continue
 
         if user_input.lower() in ["salir", "exit", "quit"]:
-            consoleInstance.print(
-                "\n👋 [bold yellow]¡Nos vemos, parcero![/bold yellow]\n"
-            )
+            cli_console.print("\n👋 [bold yellow]¡Nos vemos, parcero![/bold yellow]\n")
             break
 
         if user_input.lower() == "/clear":
             history.clear()
-            consoleInstance.print(
+            cli_console.print(
                 "🧹 [bold yellow]Memoria borrada. Empecemos de cero.[/bold yellow]\n"
             )
             continue
 
         try:
-            with consoleInstance.status(
+            with cli_console.status(
                 "[bold magenta]⏳ Echando cabeza...[/bold magenta]", spinner="dots"
             ):
                 response = assistant.run_sync(
@@ -66,8 +62,8 @@ def chat_cli() -> None:
 
                 formatted_response = Markdown(response.output)
 
-                consoleInstance.print("\n")
-                consoleInstance.print(
+                cli_console.print("\n")
+                cli_console.print(
                     Panel(
                         formatted_response,
                         title="🤖 [bold blue]Asistente[/bold blue]",
@@ -75,12 +71,10 @@ def chat_cli() -> None:
                         expand=False,
                     )
                 )
-                consoleInstance.print("\n")
+                cli_console.print("\n")
 
         except Exception as e:
-            consoleInstance.print(
-                f"\n❌ [bold red]Error técnico:[/bold red] {str(e)}\n"
-            )
+            cli_console.print(f"\n❌ [bold red]Error técnico:[/bold red] {str(e)}\n")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 [tool.ruff]
-# Longitud máxima de línea (88 es el estándar dictado por Black)
-line-length = 88
 target-version = "py313"
+line-length = 150
 
 # Configuración del formateador (El "Prettier" de Python)
 [tool.ruff.format]
@@ -26,9 +25,8 @@ select = [
 ]
 
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method (obvio)
-    "ANN102", # Missing type annotation for `cls` in classmethod (obvio)
     "ANN401", # Dynamically typed expressions (`Any` está prohibido, pero te doy margen inicial si es necesario. Eliminar este ignore en el futuro).
+    "N806", # Variable in function should be lowercase (a veces es necesario usar mayúsculas para constantes locales, pero esto se puede revisar caso por caso)
 ]
 
 [tool.ruff.lint.isort]
