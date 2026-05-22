@@ -15,6 +15,7 @@ ddgs = "*"
 sqlmodel = "*"
 
 [dev-packages]
+ruff = "*"
 
 [requires]
 python_version = "3.13"
@@ -22,3 +23,5 @@ python_version = "3.13"
 [scripts]
 start-cli = "python -m src.gateways.cli.start"
 start-telegram = "python -m src.gateways.telegram.start"
+lint = "ruff check ."
+format = "ruff format ."

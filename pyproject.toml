@@ -1,0 +1,36 @@
+[tool.ruff]
+# Longitud máxima de línea (88 es el estándar dictado por Black)
+line-length = 88
+target-version = "py313"
+
+# Configuración del formateador (El "Prettier" de Python)
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+# El "ESLint" de Python. Aquí activamos las reglas críticas.
+select = [
+    "E",   # Error base (pycodestyle)
+    "F",   # Pyflakes (variables no usadas, imports rotos)
+    "I",   # isort (orden automático de imports)
+    "B",   # flake8-bugbear (detecta malas prácticas y posibles bugs)
+    "N",   # pep8-naming (obliga a usar snake_case y CamelCase correctamente)
+    "UP",  # pyupgrade (obliga a usar sintaxis moderna de Python 3.13)
+    "SIM", # flake8-simplify (reduce anidaciones y simplifica if/else)
+    "RET", # flake8-return (fuerza los RETORNOS TEMPRANOS que tanto exigimos)
+    "ANN", # flake8-annotations (exige tipado estricto en los parámetros y retornos)
+    "ARG", # flake8-unused-arguments (argumentos que defines pero no usas)
+]
+
+ignore = [
+    "ANN101", # Missing type annotation for `self` in method (obvio)
+    "ANN102", # Missing type annotation for `cls` in classmethod (obvio)
+    "ANN401", # Dynamically typed expressions (`Any` está prohibido, pero te doy margen inicial si es necesario. Eliminar este ignore en el futuro).
+]
+
+[tool.ruff.lint.isort]
+# Le indica a isort cuál es tu código interno para agruparlo limpiamente
+known-first-party = ["src"]

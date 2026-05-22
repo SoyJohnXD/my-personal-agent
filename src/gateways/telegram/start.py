@@ -40,8 +40,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
         await update.message.reply_text(response.output)
     except Exception as e:
-        logger.error(f"Error procesando mensaje: {e}", exc_info=True)
-        await update.message.reply_text("Oops, error técnico.")
+        if "Invalid assistant message" in str(e):
+            logger.warning("Historial corrupto, reiniciando contexto...")
+            context.user_data[HISTORY_IDENTIFIER] = []
+            response = await assistant.run(user_text)
+        else:
+            raise
 
 
 def main() -> None:

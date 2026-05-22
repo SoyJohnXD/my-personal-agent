@@ -3,26 +3,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# --- Identity ---
+AGENT_NAME: str = os.getenv("AGENT_NAME")
+USER_NAME: str = os.getenv("USER_NAME")
 
-def get_env_variable(key: str) -> str:
-    value = os.getenv(key)
-    if not value:
-        raise ValueError(f"CRITICAL: Missing environment variable '{key}'")
-    return value
+# --- LLM Provider ---
+API_KEY: str = os.getenv("API_KEY")
+API_BASE_URL: str = os.getenv("API_BASE_URL")
+MODEL_NAME: str = os.getenv("MODEL_NAME")
 
-
-AGENT_NAME: str = get_env_variable("AGENT_NAME")
-USER_NAME: str = get_env_variable("USER_NAME")
-
-API_KEY: str = get_env_variable("API_KEY")
-API_BASE_URL: str = get_env_variable("API_BASE_URL")
-MODEL_NAME: str = get_env_variable("MODEL_NAME")
-
-TELEGRAM_TOKEN: str = get_env_variable("TELEGRAM_TOKEN")
+# --- Telegram Gateway ---
+TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_MEMORY_WINDOW_SIZE: int = 6
 
+# --- CLI Gateway ---
 CLI_MEMORY_WINDOW_SIZE: int = 6
 
-
+# --- Security ---
 RESTRICTED_FILES = {".env", "secrets.json", "credentials"}
 RESTRICTED_EXTENSIONS = {".key", ".pem", ".p12", ".sqlite3"}
