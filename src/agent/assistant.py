@@ -2,9 +2,8 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-
 from src.agent.prompts import WHO_YOU_ARE
-from src.config.settings import MODEL_NAME, API_KEY, API_BASE_URL
+from src.config.settings import API_BASE_URL, API_KEY, MODEL_NAME
 from src.skills.user_memories.delete_memory import delete_memory
 from src.skills.user_memories.save_memory import save_memory
 from src.skills.user_memories.search_memories import search_memories

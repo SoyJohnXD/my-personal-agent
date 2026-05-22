@@ -1,7 +1,7 @@
 from uuid import UUID
-from typing import Optional
-from src.utils.logger import get_logger
+
 from src.db.memory.repository import MemoryRepository
+from src.utils.logger import get_logger
 
 logger = get_logger("skill:user_memories:update_memory")
 repo = MemoryRepository()
@@ -9,9 +9,9 @@ repo = MemoryRepository()
 
 def update_memory(
     id: UUID,
-    title: Optional[str] = None,
-    content: Optional[str] = None,
-    tags: Optional[list[str]] = None,
+    title: str | None = None,
+    content: str | None = None,
+    tags: list[str] | None = None,
 ) -> str:
     """
     Edita una memoria existente.

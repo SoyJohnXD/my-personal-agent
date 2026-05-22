@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from sqlmodel import SQLModel, create_engine
+
 from src.config.settings import AGENT_NAME
 from src.db.memory.schema import Memory
 
@@ -11,4 +13,4 @@ SQLITE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
 
 engine = create_engine(SQLITE_URL, echo=False)
 
-SQLModel.metadata.create_all(engine)
+SQLModel.metadata.create_all(engine, tables=[Memory.__table__])

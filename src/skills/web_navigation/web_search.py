@@ -1,4 +1,5 @@
 from ddgs import DDGS
+
 from src.utils.logger import get_logger
 
 logger = get_logger("skill:web_navigation:web_search")

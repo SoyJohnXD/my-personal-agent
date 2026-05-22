@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 
 
-def save_execution_report(response: Any, user_prompt: str, session_id: str):
+def save_execution_report(response: Any, user_prompt: str, session_id: str) -> None:
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     session_dir = os.path.join(project_root, "sessions", f"session_{session_id}")
     os.makedirs(session_dir, exist_ok=True)
@@ -37,7 +37,7 @@ def save_execution_report(response: Any, user_prompt: str, session_id: str):
     }
 
     if os.path.exists(summary_path):
-        with open(summary_path, "r", encoding="utf-8") as f:
+        with open(summary_path, encoding="utf-8") as f:
             summary = json.load(f)
 
     summary["total_input"] += input_t

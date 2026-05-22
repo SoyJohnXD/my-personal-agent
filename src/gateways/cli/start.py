@@ -1,17 +1,18 @@
 from datetime import datetime
+
 from rich.console import Console
-from rich.panel import Panel
 from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.rule import Rule
 
 from src.agent.assistant import assistant
-from src.utils.report import save_execution_report
 from src.config.settings import AGENT_NAME
+from src.utils.report import save_execution_report
 
 consoleInstance = Console()
 
 
-def chat_cli():
+def chat_cli() -> None:
     consoleInstance.clear()
     consoleInstance.print(
         Panel.fit(

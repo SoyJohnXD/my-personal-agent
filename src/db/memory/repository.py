@@ -1,18 +1,16 @@
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import UUID
-from datetime import datetime, timezone
 
-from sqlmodel import Session, select, or_
+from sqlmodel import Session, or_, select
 
-from src.db.memory.utils import format_tags, merge_tags
 from src.db.core import engine
-from src.db.memory.schema import Memory
 from src.db.memory.interface import IMemoryRepository
+from src.db.memory.schema import Memory
+from src.db.memory.utils import format_tags, merge_tags
 
 
 class MemoryRepository(IMemoryRepository):
-
-    def create(self, title: str, content: str, tags: List[str]) -> Memory:
+    def create(self, title: str, content: str, tags: list[str]) -> Memory:
         memory = Memory(title=title, content=content, tags=format_tags(tags))
         with Session(engine) as session:
             session.add(memory)
@@ -20,11 +18,11 @@ class MemoryRepository(IMemoryRepository):
             session.refresh(memory)
             return memory
 
-    def get_by_id(self, id: UUID) -> Optional[Memory]:
+    def get_by_id(self, id: UUID) -> Memory | None:
         with Session(engine) as session:
             return session.get(Memory, id)
 
-    def search(self, text: str, limit: int = 10, offset: int = 0) -> List[Memory]:
+    def search(self, text: str, limit: int = 10, offset: int = 0) -> list[Memory]:
         with Session(engine) as session:
             return session.exec(
                 select(Memory)
@@ -42,10 +40,10 @@ class MemoryRepository(IMemoryRepository):
     def update(
         self,
         id: UUID,
-        title: Optional[str] = None,
-        content: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-    ) -> Optional[Memory]:
+        title: str | None = None,
+        content: str | None = None,
+        tags: list[str] | None = None,
+    ) -> Memory | None:
         with Session(engine) as session:
             memory = session.get(Memory, id)
             if not memory:
@@ -56,7 +54,7 @@ class MemoryRepository(IMemoryRepository):
                 memory.content = content
             if tags is not None:
                 memory.tags = merge_tags(memory.tags, tags)
-            memory.updated_at = datetime.now(timezone.utc)
+            memory.updated_at = datetime.now(UTC)
             session.add(memory)
             session.commit()
             session.refresh(memory)
@@ -71,6 +69,6 @@ class MemoryRepository(IMemoryRepository):
             session.commit()
             return True
 
-    def get_all(self, limit: int = 10, offset: int = 0) -> List[Memory]:
+    def get_all(self, limit: int = 10, offset: int = 0) -> list[Memory]:
         with Session(engine) as session:
             return session.exec(select(Memory).offset(offset).limit(limit)).all()

@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+
 from src.utils.logger import get_logger
 
 logger = get_logger("skill:web_navigation:scrape_webpage")

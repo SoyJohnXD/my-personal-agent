@@ -1,5 +1,5 @@
-from src.utils.logger import get_logger
 from src.db.memory.repository import MemoryRepository
+from src.utils.logger import get_logger
 
 logger = get_logger("skill:user_memories:search_memories")
 repo = MemoryRepository()

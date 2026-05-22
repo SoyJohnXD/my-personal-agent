@@ -1,9 +1,7 @@
-from typing import List
-
 TAG_PREFIX = "#"
 
 
-def format_tags(tags: List[str]) -> str:
+def format_tags(tags: list[str]) -> str:
     result = []
 
     for tag in tags:
@@ -14,7 +12,7 @@ def format_tags(tags: List[str]) -> str:
     return "".join(result)
 
 
-def merge_tags(comparison_tags: str, new_tags: List[str]) -> str:
+def merge_tags(comparison_tags: str, new_tags: list[str]) -> str:
     comparison_tags_array = []
     if comparison_tags:
         parts = comparison_tags.split(TAG_PREFIX)
