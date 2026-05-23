@@ -34,6 +34,4 @@ def skill(id: UUID) -> str:
         return f"Error al borrar la memoria: {error}"
 
 
-delete_memory = Tool(
-    skill, name=skill_name, description=directive.compile_instructions()
-)
+delete_memory = Tool(skill, name=skill_name, description=directive.compile_instructions())

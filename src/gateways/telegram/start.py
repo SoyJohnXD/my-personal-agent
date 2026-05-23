@@ -11,7 +11,7 @@ from telegram.ext import (
 
 from src.agent.assistant import assistant
 from src.config.settings import MODEL_NAME, TELEGRAM_TOKEN
-from src.db.usage.repository import UsageRepository
+from src.db.token_usage.repository import UsageRepository
 from src.utils.logger import get_logger
 
 HISTORY_IDENTIFIER = "chat_history"
@@ -54,7 +54,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         all_messages = response.all_messages()
         reasoning = _extract_reasoning(all_messages)
 
-        logger.info(f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}" + (f" | reasoning: {len(reasoning)} chars" if reasoning else ""))
+        logger.info(
+            f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}"
+            + (f" | reasoning: {len(reasoning)} chars" if reasoning else "")
+        )
 
         usage_repo.create(
             session_id=session_id,

@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from sqlmodel import Session, func, select
+from sqlmodel import Session
 
 from src.db.core import engine
-from src.db.usage.interface import IUsageRepository
-from src.db.usage.schema import TokenUsage
+from src.db.token_usage.interface import IUsageRepository
+from src.db.token_usage.schema import TokenUsage
 
 
 class UsageRepository(IUsageRepository):
@@ -36,12 +36,3 @@ class UsageRepository(IUsageRepository):
             session.commit()
             session.refresh(usage)
             return usage
-
-    def get_by_session(self, session_id: UUID, limit: int = 100, offset: int = 0) -> list[TokenUsage]:
-        with Session(engine) as session:
-            return session.exec(select(TokenUsage).where(TokenUsage.session_id == session_id).order_by(TokenUsage.created_at).offset(offset).limit(limit)).all()
-
-    def get_total_by_session(self, session_id: UUID) -> int:
-        with Session(engine) as session:
-            result = session.exec(select(func.sum(TokenUsage.total_tokens)).where(TokenUsage.session_id == session_id)).one()
-            return result or 0

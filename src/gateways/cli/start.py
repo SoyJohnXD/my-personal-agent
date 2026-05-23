@@ -8,7 +8,7 @@ from rich.rule import Rule
 
 from src.agent.assistant import assistant
 from src.config.settings import AGENT_NAME, MODEL_NAME
-from src.db.usage.repository import UsageRepository
+from src.db.token_usage.repository import UsageRepository
 from src.utils.logger import get_logger
 
 logger = get_logger("cli_gateway")
@@ -72,7 +72,10 @@ def chat_cli() -> None:
                 all_messages = response.all_messages()
                 reasoning = _extract_reasoning(all_messages)
 
-                logger.info(f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}" + (f" | reasoning: {len(reasoning)} chars" if reasoning else ""))
+                logger.info(
+                    f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}"
+                    + (f" | reasoning: {len(reasoning)} chars" if reasoning else "")
+                )
 
                 usage_repo.create(
                     session_id=session_id,

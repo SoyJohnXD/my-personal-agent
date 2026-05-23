@@ -1,6 +1,6 @@
 [tool.ruff]
 target-version = "py313"
-line-length = 1000
+line-length = 150
 
 [tool.ruff.format]
 quote-style = "double"
@@ -9,32 +9,29 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
-# El "ESLint" de Python. Aquí activamos las reglas críticas.
 select = [
-    "E",   # Error base (pycodestyle)
-    "F",   # Pyflakes (variables no usadas, imports rotos)
-    "I",   # isort (orden automático de imports)
-    "B",   # flake8-bugbear (detecta malas prácticas y posibles bugs)
-    "N",   # pep8-naming (obliga a usar snake_case y CamelCase correctamente)
-    "UP",  # pyupgrade (obliga a usar sintaxis moderna de Python 3.13)
-    "SIM", # flake8-simplify (reduce anidaciones y simplifica if/else)
-    "RET", # flake8-return (fuerza los RETORNOS TEMPRANOS que tanto exigimos)
-    "ANN", # flake8-annotations (exige tipado estricto en los parámetros y retornos)
-    "ARG", # flake8-unused-arguments (argumentos que defines pero no usas)
+    "E",   # Errores de estilo básico (pycodestyle)
+    "F",   # Variables sin usar, imports rotos, código muerto (Pyflakes)
+    "I",   # Orden automático de imports (isort)
+    "B",   # Bugs comunes, malas prácticas (flake8-bugbear)
+    "N",   # Convenciones de naming: snake_case, CamelCase (pep8-naming)
+    "UP",  # Migración a sintaxis moderna de Python 3.13+ (pyupgrade)
+    "SIM", # Simplificar condicionales, reducir anidaciones (flake8-simplify)
+    "RET", # Forzar early returns, evitar else innecesarios (flake8-return)
+    "ANN", # Exigir type hints en parámetros y retornos (flake8-annotations)
+    "ARG", # Detectar argumentos de función que nunca se usan (flake8-unused-arguments)
 ]
 
 ignore = [
-    "ANN401", # Dynamically typed expressions (`Any` está prohibido, pero te doy margen inicial si es necesario. Eliminar este ignore en el futuro).
-    "N806", # Variable in function should be lowercase (a veces es necesario usar mayúsculas para constantes locales, pero esto se puede revisar caso por caso)
+    "ANN401", # Excepción: permitir `Any` como type hint mientras migramos el código
+    "N806",   # Excepción: permitir CONSTANTES_EN_MAYUSCULAS dentro de funciones
+    "E501",   # Excepción: ignorar líneas largas; el formateo automático se encarga
 ]
 
 [tool.ruff.lint.isort]
-# Le indica a isort cuál es tu código interno para agruparlo limpiamente
 known-first-party = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = [
-  "."
-]
+pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

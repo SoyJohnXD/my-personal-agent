@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from src.db.usage.schema import TokenUsage
+from src.db.token_usage.schema import TokenUsage
 
 
 class IUsageRepository(ABC):
@@ -18,12 +18,4 @@ class IUsageRepository(ABC):
         assistant_response: str | None = None,
         reasoning: str | None = None,
     ) -> TokenUsage:
-        pass
-
-    @abstractmethod
-    def get_by_session(self, session_id: UUID, limit: int = 100, offset: int = 0) -> list[TokenUsage]:
-        pass
-
-    @abstractmethod
-    def get_total_by_session(self, session_id: UUID) -> int:
         pass

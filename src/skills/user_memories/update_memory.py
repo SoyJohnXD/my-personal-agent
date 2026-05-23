@@ -39,6 +39,4 @@ def skill(
         return f"Error al actualizar la memoria: {error}"
 
 
-update_memory = Tool(
-    skill, name=skill_name, description=directive.compile_instructions()
-)
+update_memory = Tool(skill, name=skill_name, description=directive.compile_instructions())

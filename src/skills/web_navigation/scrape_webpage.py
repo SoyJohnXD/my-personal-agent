@@ -8,9 +8,7 @@ from src.utils.logger import get_logger
 skill_name = "scrape_webpage"
 logger = get_logger(f"skill:web_navigation:{skill_name}")
 
-BROWSER_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-}
+BROWSER_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 NOISE_TAGS = [
     "script",
     "style",
@@ -82,6 +80,4 @@ def skill(url: str) -> str:
         return f"Error al leer la página: {e}"
 
 
-scrape_webpage = Tool(
-    skill, name=skill_name, description=directive.compile_instructions()
-)
+scrape_webpage = Tool(skill, name=skill_name, description=directive.compile_instructions())

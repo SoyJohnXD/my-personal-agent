@@ -3,9 +3,9 @@ reports
 sessions
 .vscode
 sqlite
-.env
 __pycache__/
 *.pyc
 .venv/
 storage/db
 .ruff_cache/
+.pytest_cache/

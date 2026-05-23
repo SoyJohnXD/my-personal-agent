@@ -25,8 +25,13 @@ datasette = "*"
 python_version = "3.13"
 
 [scripts]
+# Communication Gateways
 start-cli = "python -m src.gateways.cli.start"
 start-telegram = "python -m src.gateways.telegram.start"
-dashboard = "datasette storage/db/Hermenecio.db --open"
+
+# Database dashboard
+dashboard = "datasette storage/db/Hermenecio.db --port 9090"
+
+# Code quality
 lint = "ruff check . --fix"
 format = "ruff format ."

@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, create_engine
 
 from src.config.settings import AGENT_NAME
 from src.db.memory.schema import Memory
-from src.db.usage.schema import TokenUsage
+from src.db.token_usage.schema import TokenUsage
 
 DB_DIR = Path("storage/db")
 DB_DIR.mkdir(parents=True, exist_ok=True)
