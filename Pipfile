@@ -13,9 +13,13 @@ requests = "*"
 python-telegram-bot = "*"
 ddgs = "*"
 sqlmodel = "*"
+pytz = "*"
 
 [dev-packages]
 ruff = "*"
+pytest = "*"
+pytest-asyncio = "*"
+datasette = "*"
 
 [requires]
 python_version = "3.13"
@@ -23,5 +27,6 @@ python_version = "3.13"
 [scripts]
 start-cli = "python -m src.gateways.cli.start"
 start-telegram = "python -m src.gateways.telegram.start"
-lint = "ruff check ."
+dashboard = "datasette storage/db/Hermenecio.db --open"
+lint = "ruff check . --fix"
 format = "ruff format ."

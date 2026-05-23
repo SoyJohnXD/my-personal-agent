@@ -1,3 +1,6 @@
+from uuid import uuid4
+
+from pydantic_ai.messages import ModelResponse, ThinkingPart
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -7,13 +10,26 @@ from telegram.ext import (
 )
 
 from src.agent.assistant import assistant
-from src.config.settings import TELEGRAM_TOKEN
+from src.config.settings import MODEL_NAME, TELEGRAM_TOKEN
+from src.db.usage.repository import UsageRepository
 from src.utils.logger import get_logger
-from src.utils.report import save_execution_report
 
 HISTORY_IDENTIFIER = "chat_history"
+SESSION_ID = "session_id"
 
 logger = get_logger("telegram_gateway")
+
+usage_repo = UsageRepository()
+
+
+def _extract_reasoning(messages: list) -> str | None:
+    """Extract the thinking/reasoning from the last assistant response."""
+    for msg in reversed(messages):
+        if isinstance(msg, ModelResponse) and hasattr(msg, "parts"):
+            thinking_parts = [p.content for p in msg.parts if isinstance(p, ThinkingPart)]
+            if thinking_parts:
+                return "\n".join(thinking_parts)
+    return None
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -26,12 +42,33 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if HISTORY_IDENTIFIER not in context.user_data:
         context.user_data[HISTORY_IDENTIFIER] = []
 
+    if SESSION_ID not in context.user_data:
+        context.user_data[SESSION_ID] = uuid4()
+
+    session_id = context.user_data[SESSION_ID]
+
     try:
         response = await assistant.run(user_text, message_history=context.user_data[HISTORY_IDENTIFIER])
 
-        context.user_data[HISTORY_IDENTIFIER] = response.all_messages()
+        usage = response.usage
+        all_messages = response.all_messages()
+        reasoning = _extract_reasoning(all_messages)
 
-        save_execution_report(response, user_text, f"telegram_{update.message.chat_id}")
+        logger.info(f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}" + (f" | reasoning: {len(reasoning)} chars" if reasoning else ""))
+
+        usage_repo.create(
+            session_id=session_id,
+            chat_id=update.effective_chat.id,
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            total_tokens=usage.total_tokens,
+            model=MODEL_NAME,
+            user_message=user_text,
+            assistant_response=response.output,
+            reasoning=reasoning,
+        )
+
+        context.user_data[HISTORY_IDENTIFIER] = all_messages
 
         await update.message.reply_text(response.output)
     except Exception as e:

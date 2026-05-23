@@ -1,8 +1,7 @@
 [tool.ruff]
 target-version = "py313"
-line-length = 150
+line-length = 1000
 
-# Configuración del formateador (El "Prettier" de Python)
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -32,3 +31,10 @@ ignore = [
 [tool.ruff.lint.isort]
 # Le indica a isort cuál es tu código interno para agruparlo limpiamente
 known-first-party = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

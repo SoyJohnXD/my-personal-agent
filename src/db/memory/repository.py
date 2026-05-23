@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlmodel import Session, or_, select
+from sqlmodel import Session, String, or_, select
 
 from src.db.core import engine
 from src.db.memory.interface import IMemoryRepository
@@ -31,6 +31,8 @@ class MemoryRepository(IMemoryRepository):
                         Memory.title.ilike(f"%{text}%"),
                         Memory.content.ilike(f"%{text}%"),
                         Memory.tags.ilike(f"%{text}%"),
+                        Memory.created_at.cast(String).ilike(f"%{text}%"),
+                        Memory.updated_at.cast(String).ilike(f"%{text}%"),
                     )
                 )
                 .offset(offset)

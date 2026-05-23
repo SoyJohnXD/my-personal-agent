@@ -1,9 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
+from pydantic_ai.tools import Tool
 
+from src.skills.directive import SkillDirective
 from src.utils.logger import get_logger
 
-logger = get_logger("skill:web_navigation:scrape_webpage")
+skill_name = "scrape_webpage"
+logger = get_logger(f"skill:web_navigation:{skill_name}")
 
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -24,7 +27,7 @@ NOISE_TAGS = [
     "canvas",
     "form",
 ]
-MAX_CHARS = 4000
+MAX_CHARS = 2000
 
 
 def fetch_html(url: str) -> str:
@@ -46,12 +49,24 @@ def truncate_result(text: str) -> str:
     return text[:MAX_CHARS] + "\n\n... [CONTENIDO TRUNCADO POR LONGITUD]"
 
 
-def scrape_webpage(url: str) -> str:
-    """
-    Visita una URL y extrae su contenido de texto limpio.
-    Úsala para leer artículos, documentación o expandir un resultado de búsqueda.
-    No la uses si ya tienes el contenido suficiente del contexto actual.
-    """
+directive = SkillDirective(
+    objective=(
+        "Visita una URL específica y extrae todo su texto limpio (Scraping). REGLA: Esta tool NO es un buscador; requiere obligatoriamente una URL exacta y absoluta (ej. 'https://www.dominio.com/...')."
+    ),
+    use_cases=[
+        "El usuario te pasa explícitamente un link en el chat para que lo leas o lo resumas",
+        "Obtuviste resultados breves usando web_search y necesitas profundizar leyendo la URL completa",
+    ],
+    avoid_when=[
+        "No conoces una URL exacta",
+        "Intentas usar esto como motor de búsqueda",
+        "Ya leíste esta URL recientemente y ya adquiriste el contexto suficiente",
+        "Ya tienes suficiente contexto de web_search para responder sin necesidad de leer la página completa",
+    ],
+)
+
+
+def skill(url: str) -> str:
     logger.info(f"Scraping: '{url}'")
 
     try:
@@ -65,3 +80,8 @@ def scrape_webpage(url: str) -> str:
     except Exception as e:
         logger.error(f"Error scraping {url}: {e}")
         return f"Error al leer la página: {e}"
+
+
+scrape_webpage = Tool(
+    skill, name=skill_name, description=directive.compile_instructions()
+)

@@ -1,8 +1,11 @@
 from ddgs import DDGS
+from pydantic_ai.tools import Tool
 
+from src.skills.directive import SkillDirective
 from src.utils.logger import get_logger
 
-logger = get_logger("skill:web_navigation:web_search")
+skill_name = "web_search"
+logger = get_logger(f"skill:web_navigation:{skill_name}")
 
 MAX_RESULTS = 2
 MAX_BODY_CHARS = 300
@@ -24,22 +27,23 @@ def format_all_results(search_results: list[dict]) -> str:
     return "Resultados de la búsqueda:\n\n" + "\n".join(formatted_results)
 
 
-def web_search(query: str) -> str:
-    """
-    Busca en internet información general, documentación técnica o noticias.
+directive = SkillDirective(
+    objective=(
+        "Busca en internet información externa. REGLA PARA QUERY: Optimiza con términos clave potentes (ej: 'clima Bogotá D.C. lluvia'), NUNCA uses preguntas naturales completas."
+    ),
+    use_cases=[
+        "El usuario pide información externa, actual, noticias o precios",
+        "La pregunta requiere hechos recientes fuera de tu conocimiento base",
+    ],
+    avoid_when=[
+        "Puedes responder con tu conocimiento base sin riesgo de alucinar",
+        "El usuario pregunta por sus propios datos personales (usa search_memories)",
+    ],
+)
 
-    ÚSALA cuando:
-    - El usuario pide explícitamente buscar en internet.
-    - La respuesta requiere información actualizada que puede haber cambiado.
-    - No tienes certeza suficiente sobre el tema con tu conocimiento propio.
 
-    NO la uses cuando:
-    - Puedes responder con conocimiento propio con alta certeza.
-    - La tarea es de código, razonamiento o conversación general.
-    - Ya tienes el contexto suficiente del turno anterior.
-    """
+def skill(query: str) -> str:
     logger.info(f"Buscando: '{query}'")
-
     try:
         search_results = execute_web_search(query)
 
@@ -51,3 +55,6 @@ def web_search(query: str) -> str:
     except Exception as error:
         logger.error(f"Error en web_search: {error}")
         return f"Error al buscar en internet: {error}"
+
+
+web_search = Tool(skill, name=skill_name, description=directive.compile_instructions())

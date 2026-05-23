@@ -4,6 +4,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 
 from src.agent.prompts import WHO_YOU_ARE
 from src.config.settings import API_BASE_URL, API_KEY, MODEL_NAME
+from src.skills.basic_data.get_current_date import get_current_date
 from src.skills.user_memories.delete_memory import delete_memory
 from src.skills.user_memories.save_memory import save_memory
 from src.skills.user_memories.search_memories import search_memories
@@ -19,13 +20,16 @@ model_config = OpenAIChatModel(
     ),
 )
 
-assistant = Agent(model=model_config, system_prompt=WHO_YOU_ARE)
-
-
-assistant.tool_plain(web_search)
-assistant.tool_plain(scrape_webpage)
-
-assistant.tool_plain(save_memory)
-assistant.tool_plain(search_memories)
-assistant.tool_plain(update_memory)
-assistant.tool_plain(delete_memory)
+assistant = Agent(
+    model=model_config,
+    system_prompt=WHO_YOU_ARE,
+    tools=[
+        delete_memory,
+        update_memory,
+        save_memory,
+        search_memories,
+        web_search,
+        scrape_webpage,
+        get_current_date,
+    ],
+)
