@@ -54,10 +54,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         all_messages = response.all_messages()
         reasoning = _extract_reasoning(all_messages)
 
-        logger.info(
-            f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}"
-            + (f" | reasoning: {len(reasoning)} chars" if reasoning else "")
+        log_msg = (
+            f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} "
+            f"| total: {usage.total_tokens} | session: {session_id}"
         )
+        if reasoning:
+            log_msg += f" | reasoning: {len(reasoning)} chars"
+        logger.info(log_msg)
 
         usage_repo.create(
             session_id=session_id,
@@ -79,8 +82,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             logger.warning("Historial corrupto, reiniciando contexto...")
             context.user_data[HISTORY_IDENTIFIER] = []
             response = await assistant.run(user_text)
+            await update.message.reply_text(response.output)
         else:
-            raise
+            logger.error(f"Error inesperado: {e}")
+            await update.message.reply_text("Algo salió mal, intenta de nuevo.")
 
 
 def main() -> None:
@@ -95,7 +100,10 @@ def main() -> None:
 
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
-    logger.info("Bot de Telegram en línea. Listo para recibir mensajes. Presiona Ctrl+C para detener.")
+    logger.info(
+        "Bot de Telegram en línea. "
+        "Listo para recibir mensajes. Presiona Ctrl+C para detener."
+    )
     app.run_polling()
 
 

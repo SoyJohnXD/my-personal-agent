@@ -31,7 +31,10 @@ def chat_cli() -> None:
     cli_console.clear()
     cli_console.print(
         Panel.fit(
-            f"🤖 [bold cyan]{AGENT_NAME} CLI[/bold cyan]\nEscribe [bold red]'salir'[/bold red] para terminar.\nEscribe [bold yellow]'/clear'[/bold yellow] para borrar la memoria a corto plazo.",
+            f"🤖 [bold cyan]{AGENT_NAME} CLI[/bold cyan]\n"
+            "Escribe [bold red]'salir'[/bold red] para terminar.\n"
+            "Escribe [bold yellow]'/clear'[/bold yellow] "
+            "para borrar la memoria a corto plazo.",
             border_style="cyan",
         )
     )
@@ -72,10 +75,13 @@ def chat_cli() -> None:
                 all_messages = response.all_messages()
                 reasoning = _extract_reasoning(all_messages)
 
-                logger.info(
-                    f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} | total: {usage.total_tokens} | session: {session_id}"
-                    + (f" | reasoning: {len(reasoning)} chars" if reasoning else "")
+                log_msg = (
+                    f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} "
+                    f"| total: {usage.total_tokens} | session: {session_id}"
                 )
+                if reasoning:
+                    log_msg += f" | reasoning: {len(reasoning)} chars"
+                logger.info(log_msg)
 
                 usage_repo.create(
                     session_id=session_id,

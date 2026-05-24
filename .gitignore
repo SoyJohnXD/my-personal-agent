@@ -1,8 +1,8 @@
-.env
 reports
 sessions
 .vscode
 sqlite
+.env
 __pycache__/
 *.pyc
 .venv/

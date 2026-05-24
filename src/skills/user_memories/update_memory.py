@@ -1,14 +1,33 @@
+# === Imports ===
+
 from uuid import UUID
 
+from pydantic import BaseModel
 from pydantic_ai.tools import Tool
 
 from src.db.memory.repository import MemoryRepository
 from src.skills.directive import SkillDirective
 from src.utils.logger import get_logger
 
+# === Constants ===
+
 skill_name = "update_memory"
 logger = get_logger(f"skill:user_memories:{skill_name}")
 repo = MemoryRepository()
+
+# === Validation ===
+
+
+class UpdateMemoryArgs(BaseModel):
+    """Valida que el UUID sea válido y los campos opcionales tengan tipo correcto."""
+
+    id: UUID
+    title: str | None = None
+    content: str | None = None
+    tags: list[str] | None = None
+
+
+# === Directive ===
 
 directive = SkillDirective(
     objective="Sobrescribe el contenido de una memoria existente.",
@@ -22,15 +41,19 @@ directive = SkillDirective(
 )
 
 
+# === Skill ===
+
+
 def skill(
     id: UUID,
     title: str | None = None,
     content: str | None = None,
     tags: list[str] | None = None,
 ) -> str:
-    logger.info(f"Actualizando memoria: '{id}'")
+    parsed = UpdateMemoryArgs(id=id, title=title, content=content, tags=tags)
+    logger.info(f"Actualizando memoria: '{parsed.id}'")
     try:
-        memory = repo.update(id=id, title=title, content=content, tags=tags)
+        memory = repo.update(id=parsed.id, title=parsed.title, content=parsed.content, tags=parsed.tags)
         if not memory:
             return "No encontré esa memoria."
         return f"Memoria '{memory.title}' actualizada."
@@ -38,5 +61,7 @@ def skill(
         logger.error(f"Error en update_memory: {error}")
         return f"Error al actualizar la memoria: {error}"
 
+
+# === Tool Registration ===
 
 update_memory = Tool(skill, name=skill_name, description=directive.compile_instructions())

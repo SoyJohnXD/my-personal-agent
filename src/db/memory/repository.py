@@ -1,29 +1,33 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from sqlalchemy import Engine
 from sqlmodel import Session, String, or_, select
 
-from src.db.core import engine
+from src.db.core import engine as _default_engine
 from src.db.memory.interface import IMemoryRepository
 from src.db.memory.schema import Memory
 from src.db.memory.utils import format_tags, merge_tags
 
 
 class MemoryRepository(IMemoryRepository):
+    def __init__(self, engine: Engine | None = None) -> None:
+        self._engine = engine or _default_engine
+
     def create(self, title: str, content: str, tags: list[str]) -> Memory:
         memory = Memory(title=title, content=content, tags=format_tags(tags))
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             session.add(memory)
             session.commit()
             session.refresh(memory)
             return memory
 
     def get_by_id(self, id: UUID) -> Memory | None:
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             return session.get(Memory, id)
 
     def search(self, text: str, limit: int = 10, offset: int = 0) -> list[Memory]:
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             return session.exec(
                 select(Memory)
                 .where(
@@ -46,7 +50,7 @@ class MemoryRepository(IMemoryRepository):
         content: str | None = None,
         tags: list[str] | None = None,
     ) -> Memory | None:
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             memory = session.get(Memory, id)
             if not memory:
                 return None
@@ -63,7 +67,7 @@ class MemoryRepository(IMemoryRepository):
             return memory
 
     def delete(self, id: UUID) -> bool:
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             memory = session.get(Memory, id)
             if not memory:
                 return False
@@ -72,5 +76,5 @@ class MemoryRepository(IMemoryRepository):
             return True
 
     def get_all(self, limit: int = 10, offset: int = 0) -> list[Memory]:
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             return session.exec(select(Memory).offset(offset).limit(limit)).all()

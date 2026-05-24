@@ -1,13 +1,17 @@
 from uuid import UUID
 
+from sqlalchemy import Engine
 from sqlmodel import Session
 
-from src.db.core import engine
+from src.db.core import engine as _default_engine
 from src.db.token_usage.interface import IUsageRepository
 from src.db.token_usage.schema import TokenUsage
 
 
 class UsageRepository(IUsageRepository):
+    def __init__(self, engine: Engine | None = None) -> None:
+        self._engine = engine or _default_engine
+
     def create(
         self,
         session_id: UUID,
@@ -31,7 +35,7 @@ class UsageRepository(IUsageRepository):
             assistant_response=assistant_response,
             reasoning=reasoning,
         )
-        with Session(engine) as session:
+        with Session(self._engine) as session:
             session.add(usage)
             session.commit()
             session.refresh(usage)

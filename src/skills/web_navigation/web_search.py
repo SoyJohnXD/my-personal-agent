@@ -1,14 +1,30 @@
+# === Imports ===
+
 from ddgs import DDGS
+from pydantic import BaseModel, Field
 from pydantic_ai.tools import Tool
 
 from src.skills.directive import SkillDirective
 from src.utils.logger import get_logger
+
+# === Constants ===
 
 skill_name = "web_search"
 logger = get_logger(f"skill:web_navigation:{skill_name}")
 
 MAX_RESULTS = 2
 MAX_BODY_CHARS = 300
+
+# === Validation ===
+
+
+class WebSearchArgs(BaseModel):
+    """Valida que el LLM pase un query de búsqueda no vacío."""
+
+    query: str = Field(..., min_length=1, max_length=500)
+
+
+# === Helpers ===
 
 
 def execute_web_search(query: str) -> list[dict]:
@@ -27,9 +43,13 @@ def format_all_results(search_results: list[dict]) -> str:
     return "Resultados de la búsqueda:\n\n" + "\n".join(formatted_results)
 
 
+# === Directive ===
+
 directive = SkillDirective(
     objective=(
-        "Busca en internet información externa. REGLA PARA QUERY: Optimiza con términos clave potentes (ej: 'clima Bogotá D.C. lluvia'), NUNCA uses preguntas naturales completas."
+        "Busca en internet información externa. "
+        "REGLA PARA QUERY: Optimiza con términos clave potentes "
+        "(ej: 'clima Bogotá D.C. lluvia'), NUNCA uses preguntas naturales completas."
     ),
     use_cases=[
         "El usuario pide información externa, actual, noticias o precios",
@@ -42,10 +62,14 @@ directive = SkillDirective(
 )
 
 
+# === Skill ===
+
+
 def skill(query: str) -> str:
-    logger.info(f"Buscando: '{query}'")
+    parsed = WebSearchArgs(query=query)
+    logger.info(f"Buscando: '{parsed.query}'")
     try:
-        search_results = execute_web_search(query)
+        search_results = execute_web_search(parsed.query)
 
         if not search_results:
             return "No se encontraron resultados."
@@ -56,5 +80,7 @@ def skill(query: str) -> str:
         logger.error(f"Error en web_search: {error}")
         return f"Error al buscar en internet: {error}"
 
+
+# === Tool Registration ===
 
 web_search = Tool(skill, name=skill_name, description=directive.compile_instructions())
