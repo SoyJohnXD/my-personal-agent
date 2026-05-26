@@ -1,63 +1,53 @@
-# === Imports ===
+from uuid import UUID, uuid4
 
-from uuid import uuid4
-
-from pydantic_ai.messages import ModelResponse, ThinkingPart
+from pydantic_ai import ModelResponse
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.rule import Rule
 
 from src.agent.assistant import assistant
-from src.config.settings import AGENT_NAME, MODEL_NAME
-from src.db.token_usage.repository import UsageRepository
+from src.config.settings import CLI_CHAT_HISTORY_LIMIT, MODEL_NAME
+from src.db.token_usage.repository import TokenUsageRepository
+from src.gateways.shared.utils import control_history, track_token_usage_by_response
 from src.utils.logger import get_logger
-
-# === Constants ===
 
 EXIT_WORDS = {"salir", "exit", "quit"}
 
 logger = get_logger("cli_gateway")
 cli_console = Console()
 
-usage_repo = UsageRepository()
+usage_repo = TokenUsageRepository()
 
-# === Helpers ===
-
-
-def extract_reasoning(messages: list) -> str | None:
-    """Extrae el razonamiento del ultimo mensaje del asistente."""
-    for msg in reversed(messages):
-        if isinstance(msg, ModelResponse) and hasattr(msg, "parts"):
-            thinking_parts = [
-                part.content
-                for part in msg.parts
-                if isinstance(part, ThinkingPart)
-            ]
-            if thinking_parts:
-                return "\n".join(thinking_parts)
-    return None
+cli_state = {
+    "session_id": None,
+    "history": [],
+}
 
 
-# === Chat Loop ===
+def initialize_cli_state() -> None:
+    cli_state["session_id"] = uuid4()
+    cli_state["history"] = []
+
+
+def get_session_id() -> UUID | None:
+    return cli_state.get("session_id")
+
+
+def get_chat_history() -> list:
+    return cli_state.get("history", [])
+
+
+def update_chat_history(response: ModelResponse) -> None:
+    cli_state["history"] = control_history(response.all_messages(), CLI_CHAT_HISTORY_LIMIT)
 
 
 def chat_cli() -> None:
     cli_console.clear()
-    cli_console.print(
-        Panel.fit(
-            f"🤖 [bold cyan]{AGENT_NAME} CLI[/bold cyan]\n"
-            "Escribe [bold red]'salir'[/bold red] para terminar.\n"
-            "Escribe [bold yellow]'/clear'[/bold yellow] "
-            "para borrar la memoria a corto plazo.",
-            border_style="cyan",
-        )
-    )
 
-    session_id = uuid4()
-    history = []
+    initialize_cli_state()
 
-    logger.info(f"CLI session started: {session_id}")
+    logger.info(f"Starting gateway with model {MODEL_NAME}")
 
     while True:
         try:
@@ -73,43 +63,13 @@ def chat_cli() -> None:
             cli_console.print("\n👋 [bold yellow]Nos vemos, parcero![/bold yellow]\n")
             break
 
-        if user_input.lower() == "/clear":
-            history.clear()
-            cli_console.print("🧹 [bold yellow]Memoria borrada. Empecemos de cero.[/bold yellow]\n")
-            continue
-
         try:
-            with cli_console.status(
-                "[bold magenta]Echando cabeza...[/bold magenta]", spinner="dots"
-            ):
-                response = assistant.run_sync(user_input, message_history=history)
+            with cli_console.status("[bold magenta]Echando cabeza...[/bold magenta]", spinner="dots"):
+                response = assistant.run_sync(user_input, message_history=get_chat_history())
 
             if response:
-                usage = response.usage
-                all_messages = response.all_messages()
-                reasoning = extract_reasoning(all_messages)
-
-                log_msg = (
-                    f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} "
-                    f"| total: {usage.total_tokens} | session: {session_id}"
-                )
-                if reasoning:
-                    log_msg += f" | reasoning: {len(reasoning)} chars"
-                logger.info(log_msg)
-
-                usage_repo.create(
-                    session_id=session_id,
-                    chat_id=0,
-                    input_tokens=usage.input_tokens,
-                    output_tokens=usage.output_tokens,
-                    total_tokens=usage.total_tokens,
-                    model=MODEL_NAME,
-                    user_message=user_input,
-                    assistant_response=response.output,
-                    reasoning=reasoning,
-                )
-
-                history = all_messages
+                update_chat_history(response)
+                track_token_usage_by_response(response, get_session_id(), user_input)
 
                 cli_console.print("\n")
                 cli_console.print(

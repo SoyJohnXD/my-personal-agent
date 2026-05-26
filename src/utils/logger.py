@@ -1,21 +1,26 @@
 import logging
-import sys
+
+from rich.console import Console
+from rich.logging import RichHandler
 
 
 def get_logger(name: str) -> logging.Logger:
-    logger: logging.Logger = logging.getLogger(name)
+    logger = logging.getLogger(name)
 
     if not logger.handlers:
         logger.setLevel(logging.INFO)
-
-        handler = logging.StreamHandler(sys.stdout)
-
-        formatter = logging.Formatter(
-            fmt="%(asctime)s | %(levelname)-8s | [%(name)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
+        console = Console(force_terminal=True)
+        handler = RichHandler(
+            console=console,
+            rich_tracebacks=True,
+            tracebacks_show_locals=True,
+            show_path=True,
+            show_time=True,
+            markup=True,
+            highlighter=None,
         )
+        handler.setFormatter(logging.Formatter("[bold cyan]%(name)s[/bold cyan] > %(message)s"))
 
-        handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.propagate = False
 

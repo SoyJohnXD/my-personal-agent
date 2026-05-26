@@ -4,7 +4,7 @@ from uuid import UUID
 from src.db.token_usage.schema import TokenUsage
 
 
-class IUsageRepository(ABC):
+class ITokenUsageRepository(ABC):
     @abstractmethod
     def create(
         self,

@@ -7,7 +7,6 @@ from sqlmodel import Field, SQLModel, Text
 class TokenUsage(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     session_id: UUID = Field(index=True)
-    chat_id: int
     input_tokens: int
     output_tokens: int
     total_tokens: int
