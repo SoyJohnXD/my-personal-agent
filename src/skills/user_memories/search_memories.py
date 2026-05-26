@@ -49,7 +49,10 @@ def skill(text: str) -> str:
         memories = repo.search(text=parsed.text)
         if not memories:
             return "Sin resultados."
-        return "\n".join(f"ID:{m.id} | {m.title} | {m.tags} | {m.content[:120]}" for m in memories)
+        return "\n".join(
+            f"ID:{memory.id} | {memory.title} | {memory.tags} | {memory.content[:120]}"
+            for memory in memories
+        )
     except Exception as error:
         logger.error(f"Error en {skill_name}: {error}")
         return f"Error: {error}"

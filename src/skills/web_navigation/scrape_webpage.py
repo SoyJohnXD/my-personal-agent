@@ -106,9 +106,9 @@ def skill(url: str) -> str:
     except requests.Timeout:
         logger.error(f"Timeout al intentar leer: {url}")
         return f"Error: La página tardó demasiado en responder — {url}"
-    except Exception as e:
-        logger.error(f"Error scraping {url}: {e}")
-        return f"Error al leer la página: {e}"
+    except Exception as error:
+        logger.error(f"Error scraping {url}: {error}")
+        return f"Error al leer la página: {error}"
 
 
 # === Tool Registration ===

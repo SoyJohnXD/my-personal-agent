@@ -1,35 +1,43 @@
+# === Imports ===
+
 from uuid import uuid4
 
 from pydantic_ai.messages import ModelResponse, ThinkingPart
 from telegram import Update
-from telegram.ext import (
-    Application,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
+from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from src.agent.assistant import assistant
 from src.config.settings import MODEL_NAME, TELEGRAM_TOKEN
 from src.db.token_usage.repository import UsageRepository
 from src.utils.logger import get_logger
 
-HISTORY_IDENTIFIER = "chat_history"
-SESSION_ID = "session_id"
+# === Constants ===
+
+HISTORY_KEY = "chat_history"
+SESSION_KEY = "session_id"
 
 logger = get_logger("telegram_gateway")
 
 usage_repo = UsageRepository()
 
+# === Helpers ===
 
-def _extract_reasoning(messages: list) -> str | None:
-    """Extract the thinking/reasoning from the last assistant response."""
+
+def extract_reasoning(messages: list) -> str | None:
+    """Extrae el razonamiento del ultimo mensaje del asistente."""
     for msg in reversed(messages):
         if isinstance(msg, ModelResponse) and hasattr(msg, "parts"):
-            thinking_parts = [p.content for p in msg.parts if isinstance(p, ThinkingPart)]
+            thinking_parts = [
+                part.content
+                for part in msg.parts
+                if isinstance(part, ThinkingPart)
+            ]
             if thinking_parts:
                 return "\n".join(thinking_parts)
     return None
+
+
+# === Handlers ===
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -39,20 +47,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_text: str = update.message.text
     await update.message.chat.send_action(action="typing")
 
-    if HISTORY_IDENTIFIER not in context.user_data:
-        context.user_data[HISTORY_IDENTIFIER] = []
+    if HISTORY_KEY not in context.user_data:
+        context.user_data[HISTORY_KEY] = []
 
-    if SESSION_ID not in context.user_data:
-        context.user_data[SESSION_ID] = uuid4()
+    if SESSION_KEY not in context.user_data:
+        context.user_data[SESSION_KEY] = uuid4()
 
-    session_id = context.user_data[SESSION_ID]
+    session_id = context.user_data[SESSION_KEY]
 
     try:
-        response = await assistant.run(user_text, message_history=context.user_data[HISTORY_IDENTIFIER])
+        response = await assistant.run(
+            user_text, message_history=context.user_data[HISTORY_KEY]
+        )
 
         usage = response.usage
         all_messages = response.all_messages()
-        reasoning = _extract_reasoning(all_messages)
+        reasoning = extract_reasoning(all_messages)
 
         log_msg = (
             f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} "
@@ -74,18 +84,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             reasoning=reasoning,
         )
 
-        context.user_data[HISTORY_IDENTIFIER] = all_messages
+        context.user_data[HISTORY_KEY] = all_messages
 
         await update.message.reply_text(response.output)
-    except Exception as e:
-        if "Invalid assistant message" in str(e):
+
+    except Exception as error:
+        if "Invalid assistant message" in str(error):
             logger.warning("Historial corrupto, reiniciando contexto...")
-            context.user_data[HISTORY_IDENTIFIER] = []
+            context.user_data[HISTORY_KEY] = []
             response = await assistant.run(user_text)
             await update.message.reply_text(response.output)
         else:
-            logger.error(f"Error inesperado: {e}")
-            await update.message.reply_text("Algo salió mal, intenta de nuevo.")
+            logger.error(f"Error inesperado: {error}")
+            await update.message.reply_text("Algo salio mal, intenta de nuevo.")
+
+
+# === Main ===
 
 
 def main() -> None:
@@ -94,16 +108,12 @@ def main() -> None:
     token: str = TELEGRAM_TOKEN
     if not token:
         logger.fatal("Falta la variable de entorno TELEGRAM_TOKEN")
-        raise ValueError("Error crítico: Falta la variable de entorno TELEGRAM_TOKEN")
+        raise ValueError("Error critico: Falta la variable de entorno TELEGRAM_TOKEN")
 
     app: Application = Application.builder().token(token).build()
-
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
-    logger.info(
-        "Bot de Telegram en línea. "
-        "Listo para recibir mensajes. Presiona Ctrl+C para detener."
-    )
+    logger.info("Bot de Telegram en linea. Listo para recibir mensajes. Presiona Ctrl+C para detener.")
     app.run_polling()
 
 

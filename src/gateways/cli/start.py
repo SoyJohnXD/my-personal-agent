@@ -1,3 +1,5 @@
+# === Imports ===
+
 from uuid import uuid4
 
 from pydantic_ai.messages import ModelResponse, ThinkingPart
@@ -11,20 +13,33 @@ from src.config.settings import AGENT_NAME, MODEL_NAME
 from src.db.token_usage.repository import UsageRepository
 from src.utils.logger import get_logger
 
+# === Constants ===
+
+EXIT_WORDS = {"salir", "exit", "quit"}
+
 logger = get_logger("cli_gateway")
 cli_console = Console()
 
 usage_repo = UsageRepository()
 
+# === Helpers ===
 
-def _extract_reasoning(messages: list) -> str | None:
-    """Extract the thinking/reasoning from the last assistant response."""
+
+def extract_reasoning(messages: list) -> str | None:
+    """Extrae el razonamiento del ultimo mensaje del asistente."""
     for msg in reversed(messages):
         if isinstance(msg, ModelResponse) and hasattr(msg, "parts"):
-            thinking_parts = [p.content for p in msg.parts if isinstance(p, ThinkingPart)]
+            thinking_parts = [
+                part.content
+                for part in msg.parts
+                if isinstance(part, ThinkingPart)
+            ]
             if thinking_parts:
                 return "\n".join(thinking_parts)
     return None
+
+
+# === Chat Loop ===
 
 
 def chat_cli() -> None:
@@ -47,15 +62,15 @@ def chat_cli() -> None:
     while True:
         try:
             cli_console.print(Rule(style="dim"))
-            user_input = cli_console.input("\n[bold green]👤 Tú:[/bold green] ").strip()
+            user_input = cli_console.input("\n[bold green]Tu:[/bold green] ").strip()
         except (KeyboardInterrupt, EOFError):
             break
 
         if not user_input:
             continue
 
-        if user_input.lower() in ["salir", "exit", "quit"]:
-            cli_console.print("\n👋 [bold yellow]¡Nos vemos, parcero![/bold yellow]\n")
+        if user_input.lower() in EXIT_WORDS:
+            cli_console.print("\n👋 [bold yellow]Nos vemos, parcero![/bold yellow]\n")
             break
 
         if user_input.lower() == "/clear":
@@ -64,16 +79,15 @@ def chat_cli() -> None:
             continue
 
         try:
-            with cli_console.status("[bold magenta]⏳ Echando cabeza...[/bold magenta]", spinner="dots"):
-                response = assistant.run_sync(
-                    user_input,
-                    message_history=history,
-                )
+            with cli_console.status(
+                "[bold magenta]Echando cabeza...[/bold magenta]", spinner="dots"
+            ):
+                response = assistant.run_sync(user_input, message_history=history)
 
             if response:
                 usage = response.usage
                 all_messages = response.all_messages()
-                reasoning = _extract_reasoning(all_messages)
+                reasoning = extract_reasoning(all_messages)
 
                 log_msg = (
                     f"Tokens — input: {usage.input_tokens} | output: {usage.output_tokens} "
@@ -97,12 +111,10 @@ def chat_cli() -> None:
 
                 history = all_messages
 
-                formatted_response = Markdown(response.output)
-
                 cli_console.print("\n")
                 cli_console.print(
                     Panel(
-                        formatted_response,
+                        Markdown(response.output),
                         title="🤖 [bold blue]Asistente[/bold blue]",
                         border_style="blue",
                         expand=False,
@@ -110,8 +122,8 @@ def chat_cli() -> None:
                 )
                 cli_console.print("\n")
 
-        except Exception as e:
-            cli_console.print(f"\n❌ [bold red]Error técnico:[/bold red] {str(e)}\n")
+        except Exception as error:
+            cli_console.print(f"\n❌ [bold red]Error tecnico:[/bold red] {str(error)}\n")
 
 
 if __name__ == "__main__":
