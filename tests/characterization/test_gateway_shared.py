@@ -38,22 +38,20 @@ def test_control_history_keeps_tool_return_context_at_cut_boundary():
     assert trimmed == messages[1:]
 
 
-def test_track_token_usage_accepts_injected_repo_model_and_chat_id():
+def test_track_token_usage_accepts_injected_repo_and_model():
     repo = FakeRepo()
     session_id = uuid4()
 
-    track_token_usage_by_response(FakeResponse(), session_id, "hola", token_usage_repo=repo, model_name="model-a", chat_id=99)
+    track_token_usage_by_response(FakeResponse(), session_id, "hola", token_usage_repo=repo, model_name="model-a")
 
     assert repo.calls == [
         {
             "model": "model-a",
             "session_id": session_id,
-            "chat_id": 99,
             "user_message": "hola",
             "assistant_response": "respuesta",
             "input_tokens": 7,
             "output_tokens": 3,
             "total_tokens": 10,
-            "reasoning": None,
         }
     ]

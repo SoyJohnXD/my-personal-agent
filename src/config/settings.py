@@ -45,11 +45,7 @@ def _required_env(name: str) -> str:
     return value
 
 
-def load_settings(*, require_telegram_token: bool = False) -> Settings:
-    load_dotenv()
-    telegram_token = os.getenv(TELEGRAM_TOKEN_ENV)
-    if require_telegram_token and not telegram_token:
-        raise ValueError(TELEGRAM_TOKEN_ENV)
+def _base_settings(telegram_token: str | None = None) -> Settings:
     return Settings(
         agent_name=_required_env(AGENT_NAME_ENV),
         user_name=_required_env(USER_NAME_ENV),
@@ -58,3 +54,16 @@ def load_settings(*, require_telegram_token: bool = False) -> Settings:
         model_name=_required_env(MODEL_NAME_ENV),
         telegram_token=telegram_token,
     )
+
+
+def load_cli_settings() -> Settings:
+    load_dotenv()
+    return _base_settings(telegram_token=os.getenv(TELEGRAM_TOKEN_ENV))
+
+
+def load_telegram_settings() -> Settings:
+    load_dotenv()
+    telegram_token = os.getenv(TELEGRAM_TOKEN_ENV)
+    if not telegram_token:
+        raise ValueError(TELEGRAM_TOKEN_ENV)
+    return _base_settings(telegram_token=telegram_token)

@@ -1,4 +1,3 @@
-from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic_ai import ModelResponse
@@ -8,7 +7,7 @@ from rich.panel import Panel
 from rich.rule import Rule
 
 from src.agent.assistant import create_assistant
-from src.config.settings import Settings, load_settings
+from src.config.settings import Settings, load_cli_settings
 from src.db.core import create_database_engine, initialize_database
 from src.db.token_usage.repository import TokenUsageRepository
 from src.gateways.shared.utils import control_history, track_token_usage_by_response
@@ -39,15 +38,12 @@ def update_chat_history(response: ModelResponse, settings: Settings) -> None:
     cli_state["history"] = control_history(response.all_messages(), settings.cli_chat_history_limit)
 
 
-def build_cli_runtime(settings: Settings | None = None) -> tuple[Settings, Any, TokenUsageRepository]:
-    loaded_settings = settings or load_settings()
-    database_engine = initialize_database(create_database_engine(loaded_settings))
-    return loaded_settings, create_assistant(loaded_settings), TokenUsageRepository(database_engine)
-
-
 def chat_cli() -> None:
     cli_console.clear()
-    settings, runtime_assistant, token_usage_repo = build_cli_runtime()
+    settings = load_cli_settings()
+    database_engine = initialize_database(create_database_engine(settings))
+    runtime_assistant = create_assistant(settings)
+    token_usage_repo = TokenUsageRepository(database_engine)
     initialize_cli_state()
 
     logger.info(f"Starting gateway with model {settings.model_name}")

@@ -9,13 +9,11 @@ class ITokenUsageRepository(ABC):
     def create(
         self,
         session_id: UUID,
-        chat_id: int | None,
         input_tokens: int,
         output_tokens: int,
         total_tokens: int,
         model: str | None = None,
         user_message: str | None = None,
         assistant_response: str | None = None,
-        reasoning: str | None = None,
     ) -> TokenUsage:
         pass

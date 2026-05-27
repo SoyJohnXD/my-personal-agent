@@ -1,4 +1,4 @@
-from src.config.settings import Settings, load_settings
+from src.config.settings import Settings
 
 
 def build_who_you_are(settings: Settings) -> str:
@@ -14,11 +14,3 @@ def build_who_you_are(settings: Settings) -> str:
         "- Sin suposiciones: si falta info crítica, pregunta exactamente qué necesitas.\n"
         "- Sin promesas vacías: no ofrezcas capacidades que no tienes."
     )
-
-
-class LazyPrompt:
-    def __str__(self) -> str:
-        return build_who_you_are(load_settings())
-
-
-WHO_YOU_ARE = LazyPrompt()

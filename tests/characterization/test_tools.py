@@ -70,11 +70,12 @@ def test_user_memory_tool_factories_preserve_tool_names():
 
 
 def test_assistant_factory_preserves_tool_order(monkeypatch):
-    from src.agent.assistant import TOOL_ORDER, create_assistant
+    from src.agent.assistant import DEFAULT_TOOLS, create_assistant
     from src.config.settings import Settings
 
     settings = Settings(agent_name="Hermenecio", user_name="Juan", api_key="key", api_base_url="https://example.test/v1", model_name="model-a")
     assistant = create_assistant(settings, model="test")
+    tool_names = [tool.name for tool in DEFAULT_TOOLS]
 
-    assert TOOL_ORDER == ["delete_memory", "update_memory", "save_memory", "search_memories", "web_search", "scrape_webpage", "get_current_date"]
-    assert list(assistant._function_toolset.tools.keys()) == TOOL_ORDER
+    assert tool_names == ["delete_memory", "update_memory", "save_memory", "search_memories", "web_search", "scrape_webpage", "get_current_date"]
+    assert list(assistant._function_toolset.tools.keys()) == tool_names

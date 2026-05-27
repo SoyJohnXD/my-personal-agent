@@ -15,25 +15,22 @@ class TokenUsageRepository(ITokenUsageRepository):
     def create(
         self,
         session_id: UUID,
-        chat_id: int | None,
         input_tokens: int,
         output_tokens: int,
         total_tokens: int,
         model: str | None = None,
         user_message: str | None = None,
         assistant_response: str | None = None,
-        reasoning: str | None = None,
     ) -> TokenUsage:
         usage = TokenUsage(
             session_id=session_id,
-            chat_id=chat_id,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
             model=model,
             user_message=user_message,
             assistant_response=assistant_response,
-            reasoning=reasoning,
+            reasoning=None,
         )
         with Session(self._engine) as session:
             session.add(usage)

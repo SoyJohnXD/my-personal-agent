@@ -45,27 +45,25 @@ def test_memory_repository_crud_search_uses_injected_engine(tmp_path, monkeypatc
     assert not Path("storage/db").exists()
 
 
-def test_token_usage_repository_stores_chat_id_reasoning_and_optional_fields():
+def test_token_usage_repository_keeps_reasoning_empty_until_extraction_is_defined():
     repo = TokenUsageRepository(memory_engine())
     session_id = uuid4()
 
     usage = repo.create(
         session_id=session_id,
-        chat_id=123,
         input_tokens=10,
         output_tokens=5,
         total_tokens=15,
         model="model-a",
         user_message="hola",
         assistant_response="sisas",
-        reasoning="short trace",
     )
 
-    assert usage.chat_id == 123
-    assert usage.reasoning == "short trace"
+    assert not hasattr(usage, "chat_id")
+    assert usage.reasoning is None
     assert usage.user_message == "hola"
 
-    minimal = repo.create(session_id=session_id, chat_id=456, input_tokens=1, output_tokens=2, total_tokens=3)
+    minimal = repo.create(session_id=session_id, input_tokens=1, output_tokens=2, total_tokens=3)
     assert minimal.model is None
     assert minimal.reasoning is None
 
@@ -88,4 +86,5 @@ def test_token_usage_migration_is_explicit_and_idempotent(tmp_path):
     with Session(engine) as session:
         columns = {row[1] for row in session.connection().exec_driver_sql("PRAGMA table_info(tokenusage)")}
 
-    assert {"chat_id", "user_message", "assistant_response", "reasoning"}.issubset(columns)
+    assert {"user_message", "assistant_response", "reasoning"}.issubset(columns)
+    assert "chat_id" not in columns

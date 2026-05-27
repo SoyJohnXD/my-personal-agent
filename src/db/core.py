@@ -1,16 +1,14 @@
 from pathlib import Path
-from typing import Any
 
 from sqlalchemy import Engine
 from sqlmodel import SQLModel, create_engine
 
-from src.config.settings import Settings, load_settings
+from src.config.settings import Settings, load_cli_settings
 from src.db.memory.schema import Memory
 from src.db.token_usage.schema import TokenUsage
 
 DB_DIR = Path("storage/db")
 TOKEN_USAGE_MIGRATION_COLUMNS = {
-    "chat_id": "INTEGER",
     "user_message": "TEXT",
     "assistant_response": "TEXT",
     "reasoning": "TEXT",
@@ -52,23 +50,6 @@ def initialize_database(database_engine: Engine) -> Engine:
 def get_default_engine(settings: Settings | None = None) -> Engine:
     global _default_engine
     if _default_engine is None:
-        _default_engine = create_database_engine(settings or load_settings())
+        _default_engine = create_database_engine(settings or load_cli_settings())
         initialize_database(_default_engine)
     return _default_engine
-
-
-class LazyEngine:
-    def _engine(self) -> Engine:
-        return get_default_engine()
-
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self._engine(), name)
-
-    def connect(self, *args: Any, **kwargs: Any) -> Any:
-        return self._engine().connect(*args, **kwargs)
-
-    def begin(self, *args: Any, **kwargs: Any) -> Any:
-        return self._engine().begin(*args, **kwargs)
-
-
-engine = LazyEngine()

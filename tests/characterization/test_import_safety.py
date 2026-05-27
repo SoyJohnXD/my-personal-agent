@@ -68,5 +68,6 @@ def test_db_core_import_does_not_migrate_legacy_schema_until_initialized(monkeyp
     first_migrated_columns = _token_usage_columns(sqlite_path)
     db_core.initialize_database(db_core.create_database_engine(settings))
 
-    assert {"chat_id", "user_message", "assistant_response", "reasoning"}.issubset(first_migrated_columns)
+    assert {"user_message", "assistant_response", "reasoning"}.issubset(first_migrated_columns)
+    assert "chat_id" not in first_migrated_columns
     assert _token_usage_columns(sqlite_path) == first_migrated_columns
