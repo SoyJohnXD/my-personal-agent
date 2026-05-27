@@ -1,30 +1,20 @@
-# === Imports ===
-
 from pydantic import BaseModel, Field
 from pydantic_ai.tools import Tool
 
+from src.db.memory.interface import IMemoryRepository
 from src.db.memory.repository import MemoryRepository
 from src.skills.directive import SkillDirective
 from src.utils.logger import get_logger
 
-# === Constants ===
-
 skill_name = "save_memory"
 logger = get_logger(f"skill:user_memories:{skill_name}")
-repo = MemoryRepository()
-
-# === Validation ===
 
 
 class SaveMemoryArgs(BaseModel):
-    """Valida título corto, contenido no vacío y al menos un tag."""
-
     title: str = Field(..., min_length=1, max_length=50)
     content: str = Field(..., min_length=1)
     tags: list[str] = Field(..., min_length=1)
 
-
-# === Directive ===
 
 directive = SkillDirective(
     objective=(
@@ -44,20 +34,26 @@ directive = SkillDirective(
 )
 
 
-# === Skill ===
+def _repository(repository: IMemoryRepository | None) -> IMemoryRepository:
+    return repository or MemoryRepository()
 
 
-def skill(title: str, content: str, tags: list[str]) -> str:
+def skill(title: str, content: str, tags: list[str], repository: IMemoryRepository | None = None) -> str:
     parsed = SaveMemoryArgs(title=title, content=content, tags=tags)
     logger.info(f"Guardando memoria: '{parsed.title}'")
     try:
-        memory = repo.create(title=parsed.title, content=parsed.content, tags=parsed.tags)
+        memory = _repository(repository).create(title=parsed.title, content=parsed.content, tags=parsed.tags)
         return f"Memoria '{memory.title}' guardada con id {memory.id}."
     except Exception as error:
         logger.error(f"Error en save_memory: {error}")
         return f"Error al guardar la memoria: {error}"
 
 
-# === Tool Registration ===
+def build_save_memory_tool(repository: IMemoryRepository | None = None) -> Tool:
+    def run(title: str, content: str, tags: list[str]) -> str:
+        return skill(title, content, tags, repository=repository)
 
-save_memory = Tool(skill, name=skill_name, description=directive.compile_instructions())
+    return Tool(run, name=skill_name, description=directive.compile_instructions())
+
+
+save_memory = build_save_memory_tool()
