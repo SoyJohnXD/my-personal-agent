@@ -9,7 +9,7 @@ class ITokenUsageRepository(ABC):
     def create(
         self,
         session_id: UUID,
-        chat_id: int,
+        chat_id: int | None,
         input_tokens: int,
         output_tokens: int,
         total_tokens: int,

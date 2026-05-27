@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import Engine
 from sqlmodel import Session, String, or_, select
 
-from src.db.core import engine as _default_engine
+from src.db.core import get_default_engine
 from src.db.memory.interface import IMemoryRepository
 from src.db.memory.schema import Memory
 from src.db.memory.utils import format_tags, merge_tags
@@ -12,7 +12,7 @@ from src.db.memory.utils import format_tags, merge_tags
 
 class MemoryRepository(IMemoryRepository):
     def __init__(self, engine: Engine | None = None) -> None:
-        self._engine = engine or _default_engine
+        self._engine = engine or get_default_engine()
 
     def create(self, title: str, content: str, tags: list[str]) -> Memory:
         memory = Memory(title=title, content=content, tags=format_tags(tags))
