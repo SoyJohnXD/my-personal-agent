@@ -69,12 +69,13 @@ def test_user_memory_tool_factories_preserve_tool_names():
     assert build_search_memories_tool(repo).name == "search_memories"
 
 
-def test_assistant_factory_preserves_tool_order(monkeypatch):
-    from src.agent.assistant import DEFAULT_TOOLS, create_assistant
-    from src.config.settings import Settings
+def test_default_tools_keep_assistant_tool_order(monkeypatch):
+    from pydantic_ai import Agent
 
-    settings = Settings(agent_name="Hermenecio", user_name="Juan", api_key="key", api_base_url="https://example.test/v1", model_name="model-a")
-    assistant = create_assistant(settings, model="test")
+    from src.agent.assistant import DEFAULT_TOOLS
+    from src.agent.prompts import build_who_you_are
+
+    assistant = Agent(model="test", system_prompt=build_who_you_are("Hermenecio", "Juan"), tools=DEFAULT_TOOLS)
     tool_names = [tool.name for tool in DEFAULT_TOOLS]
 
     assert tool_names == ["delete_memory", "update_memory", "save_memory", "search_memories", "web_search", "scrape_webpage", "get_current_date"]

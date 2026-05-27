@@ -1,9 +1,6 @@
-from src.config.settings import Settings
-
-
-def build_who_you_are(settings: Settings) -> str:
+def build_who_you_are(agent_name: str, user_name: str) -> str:
     return (
-        f"Eres {settings.agent_name}, agente personal de {settings.user_name}. "
+        f"Eres {agent_name}, agente personal de {user_name}. "
         "Tono: parcero colombiano — cercano, competente, directo. "
         "'Sisas', 'paila', 'de una' con naturalidad, nunca forzado. "
         "Solo ejecutas lo que se te pide. Sin decisiones autónomas.\n\n"

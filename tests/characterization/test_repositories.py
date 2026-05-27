@@ -18,13 +18,10 @@ def memory_engine():
 
 
 def test_default_sqlite_path_uses_agent_name(tmp_path):
-    from src.config.settings import Settings
     from src.db.core import get_sqlite_file_name, get_sqlite_url
 
-    settings = Settings(agent_name="Hermenecio", user_name="Juan", api_key="key", api_base_url="url", model_name="model")
-
-    assert get_sqlite_file_name(settings) == Path("storage/db/Hermenecio.db")
-    assert get_sqlite_url(settings) == "sqlite:///storage/db/Hermenecio.db"
+    assert get_sqlite_file_name("Hermenecio") == Path("storage/db/Hermenecio.db")
+    assert get_sqlite_url("Hermenecio") == "sqlite:///storage/db/Hermenecio.db"
 
 
 def test_memory_repository_crud_search_uses_injected_engine(tmp_path, monkeypatch):

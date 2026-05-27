@@ -57,16 +57,9 @@ def test_db_core_import_does_not_migrate_legacy_schema_until_initialized(monkeyp
 
     assert _token_usage_columns(sqlite_path) == {"id", "session_id", "input_tokens", "output_tokens", "total_tokens", "model", "created_at"}
 
-    settings = importlib.import_module("src.config.settings").Settings(
-        agent_name="Hermenecio",
-        user_name="Juan",
-        api_key="key",
-        api_base_url="url",
-        model_name="model",
-    )
-    db_core.initialize_database(db_core.create_database_engine(settings))
+    db_core.initialize_database(db_core.create_database_engine("Hermenecio"))
     first_migrated_columns = _token_usage_columns(sqlite_path)
-    db_core.initialize_database(db_core.create_database_engine(settings))
+    db_core.initialize_database(db_core.create_database_engine("Hermenecio"))
 
     assert {"user_message", "assistant_response", "reasoning"}.issubset(first_migrated_columns)
     assert "chat_id" not in first_migrated_columns

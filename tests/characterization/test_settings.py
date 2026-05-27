@@ -20,11 +20,10 @@ def clear_runtime_env(monkeypatch):
 def test_settings_import_is_safe_without_environment(monkeypatch):
     clear_runtime_env(monkeypatch)
     module = importlib.import_module("src.config.settings")
-    assert hasattr(module, "load_cli_settings")
-    assert hasattr(module, "load_telegram_settings")
+    assert hasattr(module, "get_env")
 
 
-def test_load_cli_settings_names_missing_base_key(monkeypatch):
+def test_get_env_names_missing_base_key(monkeypatch):
     clear_runtime_env(monkeypatch)
     for key, value in BASE_ENV.items():
         if key != "MODEL_NAME":
@@ -33,7 +32,7 @@ def test_load_cli_settings_names_missing_base_key(monkeypatch):
     settings = importlib.import_module("src.config.settings")
 
     with pytest.raises(ValueError, match="MODEL_NAME"):
-        settings.load_cli_settings()
+        settings.get_env("MODEL_NAME")
 
 
 def test_cli_settings_do_not_require_telegram_token(monkeypatch):
@@ -41,11 +40,10 @@ def test_cli_settings_do_not_require_telegram_token(monkeypatch):
     for key, value in BASE_ENV.items():
         monkeypatch.setenv(key, value)
 
-    settings_module = importlib.import_module("src.config.settings")
-    loaded = settings_module.load_cli_settings()
+    settings = importlib.import_module("src.config.settings")
 
-    assert loaded.telegram_token is None
-    assert loaded.model_name == "test-model"
+    assert settings.get_env("MODEL_NAME") == "test-model"
+    assert settings.os.getenv("TELEGRAM_TOKEN") is None
 
 
 def test_telegram_settings_require_token_only_when_requested(monkeypatch):
@@ -53,10 +51,10 @@ def test_telegram_settings_require_token_only_when_requested(monkeypatch):
     for key, value in BASE_ENV.items():
         monkeypatch.setenv(key, value)
 
-    settings_module = importlib.import_module("src.config.settings")
+    settings = importlib.import_module("src.config.settings")
 
     with pytest.raises(ValueError, match="TELEGRAM_TOKEN"):
-        settings_module.load_telegram_settings()
+        settings.get_env("TELEGRAM_TOKEN")
 
 
 def test_telegram_settings_load_token_when_present(monkeypatch):
@@ -65,8 +63,7 @@ def test_telegram_settings_load_token_when_present(monkeypatch):
         monkeypatch.setenv(key, value)
     monkeypatch.setenv("TELEGRAM_TOKEN", "telegram-token")
 
-    settings_module = importlib.import_module("src.config.settings")
-    loaded = settings_module.load_telegram_settings()
+    settings = importlib.import_module("src.config.settings")
 
-    assert loaded.telegram_token == "telegram-token"
-    assert loaded.model_name == "test-model"
+    assert settings.get_env("TELEGRAM_TOKEN") == "telegram-token"
+    assert settings.get_env("MODEL_NAME") == "test-model"

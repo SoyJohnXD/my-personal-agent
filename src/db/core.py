@@ -1,9 +1,10 @@
 from pathlib import Path
 
+from dotenv import load_dotenv
 from sqlalchemy import Engine
 from sqlmodel import SQLModel, create_engine
 
-from src.config.settings import Settings, load_cli_settings
+from src.config.settings import AGENT_NAME_ENV, get_env
 from src.db.memory.schema import Memory
 from src.db.token_usage.schema import TokenUsage
 
@@ -17,17 +18,17 @@ TOKEN_USAGE_MIGRATION_COLUMNS = {
 _default_engine: Engine | None = None
 
 
-def get_sqlite_file_name(settings: Settings) -> Path:
-    return DB_DIR / f"{settings.agent_name}.db"
+def get_sqlite_file_name(agent_name: str) -> Path:
+    return DB_DIR / f"{agent_name}.db"
 
 
-def get_sqlite_url(settings: Settings) -> str:
-    return f"sqlite:///{get_sqlite_file_name(settings)}"
+def get_sqlite_url(agent_name: str) -> str:
+    return f"sqlite:///{get_sqlite_file_name(agent_name)}"
 
 
-def create_database_engine(settings: Settings) -> Engine:
+def create_database_engine(agent_name: str) -> Engine:
     DB_DIR.mkdir(parents=True, exist_ok=True)
-    return create_engine(get_sqlite_url(settings), echo=False)
+    return create_engine(get_sqlite_url(agent_name), echo=False)
 
 
 def migrate_usage_columns(database_engine: Engine) -> None:
@@ -47,9 +48,10 @@ def initialize_database(database_engine: Engine) -> Engine:
     return database_engine
 
 
-def get_default_engine(settings: Settings | None = None) -> Engine:
+def get_default_engine(agent_name: str | None = None) -> Engine:
     global _default_engine
     if _default_engine is None:
-        _default_engine = create_database_engine(settings or load_cli_settings())
+        load_dotenv()
+        _default_engine = create_database_engine(agent_name or get_env(AGENT_NAME_ENV))
         initialize_database(_default_engine)
     return _default_engine
